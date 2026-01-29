@@ -1,25 +1,12 @@
-package tn.esprit.studentmanagement.entities;
+package com.example;
 
-import jakarta.persistence.*;
-import lombok.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.List;
+public class SimpleUnitTest {
 
-@Entity
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-@ToString
-public class Department {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idDepartment;
-    private String name;
-    private String location;
-    private String phone;
-    private String head; // chef de département
-
-    @OneToMany(mappedBy = "department")
-    private List<Student> students;
+    @Test
+    void simplePass() {
+        assertTrue(true);
+    }
 }

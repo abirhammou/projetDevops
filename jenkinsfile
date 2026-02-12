@@ -59,6 +59,25 @@ pipeline {
                 '''
             }
         }
+          stage('Kubernetes Deploy MySQL') {
+            steps {
+                echo "Deploy MySQL..."
+                sh 'kubectl apply -f k8s/mysql-pv.yaml'
+                sh 'kubectl apply -f k8s/mysql-pvc.yaml'
+                sh 'kubectl apply -f k8s/mysql-deployment.yaml'
+                sh 'kubectl apply -f k8s/mysql-service.yaml'
+            }
+        }
+
+        stage('Kubernetes Deploy Spring Boot') {
+            steps {
+                echo "Deploy Spring Boot..."
+                sh 'kubectl apply -f k8s/spring-config.yaml'
+                sh 'kubectl apply -f k8s/spring-secret.yaml'
+                sh 'kubectl apply -f k8s/spring-deployment.yaml'
+                sh 'kubectl apply -f k8s/spring-service.yaml'
+            }
+        }
     }
 
     post {

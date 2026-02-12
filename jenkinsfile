@@ -1,0 +1,72 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "abirhammou/projet-devops"
+        IMAGE_TAG = "latest"
+    }
+
+    stages {
+
+        stage('Checkout GitHub') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/abirhammou/projetDevops.git',
+                    credentialsId: 'github-token'
+            }
+        }
+
+        stage('Build Maven Project') {
+            steps {
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                    docker build -t $IMAGE_NAME:$IMAGE_TAG .
+                '''
+            }
+        }
+
+        stage('Login to DockerHub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-cred',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                }
+            }
+        }
+
+        stage('Push Image to DockerHub') {
+            steps {
+                sh '''
+                    docker push $IMAGE_NAME:$IMAGE_TAG
+                '''
+            }
+        }
+
+        stage('Run Container') {
+            steps {
+                sh '''
+                    docker stop my-app || true
+                    docker rm my-app || true
+                    docker run -d -p 8089:8080 --name my-app $IMAGE_NAME:$IMAGE_TAG
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Image buildée et pushée sur DockerHub avec succès"
+        }
+        failure {
+            echo "❌ Pipeline échoué"
+        }
+    }
+}

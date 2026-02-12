@@ -24,9 +24,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh '''
-                    docker build -t $IMAGE_NAME:$IMAGE_TAG .
-                '''
+                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
             }
         }
 
@@ -44,9 +42,7 @@ pipeline {
 
         stage('Push Image to DockerHub') {
             steps {
-                sh '''
-                    docker push $IMAGE_NAME:$IMAGE_TAG
-                '''
+                sh 'docker push $IMAGE_NAME:$IMAGE_TAG'
             }
         }
 
@@ -59,20 +55,19 @@ pipeline {
                 '''
             }
         }
-        
-       stage('Kubernetes Deploy') {
-  steps {
-    sh 'kubectl apply -f k8s/mysql-pv.yaml'
-    sh 'kubectl apply -f k8s/mysql-pvc.yaml'
-    sh 'kubectl apply -f k8s/mysql-deployment.yaml'
-    sh 'kubectl apply -f k8s/mysql-service.yaml'
-    sh 'kubectl apply -f k8s/spring-config.yaml'
-    sh 'kubectl apply -f k8s/spring-secret.yaml'
-    sh 'kubectl apply -f k8s/spring-deployment.yaml'
-    sh 'kubectl apply -f k8s/spring-service.yaml'
-  }
-}
 
+        stage('Kubernetes Deploy') {
+            steps {
+                sh 'kubectl apply -f k8s/mysql-pv.yaml'
+                sh 'kubectl apply -f k8s/mysql-pvc.yaml'
+                sh 'kubectl apply -f k8s/mysql-deployment.yaml'
+                sh 'kubectl apply -f k8s/mysql-service.yaml'
+                sh 'kubectl apply -f k8s/spring-config.yaml'
+                sh 'kubectl apply -f k8s/spring-secret.yaml'
+                sh 'kubectl apply -f k8s/spring-deployment.yaml'
+                sh 'kubectl apply -f k8s/spring-service.yaml'
+            }
+        }   // ✅ THIS WAS MISSING
     }
 
     post {

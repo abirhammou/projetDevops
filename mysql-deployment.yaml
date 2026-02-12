@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot
+  namespace: devops
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: springboot
+
+  template:
+    metadata:
+      labels:
+        app: springboot
+
+    spec:
+      containers:
+        - name: springboot
+          image: your-springboot-image
+
+          envFrom:
+            - configMapRef:
+                name: spring-config
+
+            - secretRef:
+                name: spring-secret
+
+          ports:
+            - containerPort: 8080

@@ -15,7 +15,9 @@ spec:
     spec:
       containers:
         - name: springboot
-          image: abirhammou/student-management:latest
+          image: abirhammou/projet-devops:latest
+          imagePullPolicy: Always
+
           envFrom:
             - configMapRef:
                 name: spring-config

@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sonarqube-data-pvc
+  namespace: devops
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonarqube
+  namespace: devops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sonarqube
+  template:
+    metadata:
+      labels:
+        app: sonarqube
+    spec:
+      containers:
+      - name: sonarqube
+        image: sonarqube:7.8-community   # version LTS avec support MySQL
+        env:
+        - name: SONAR_JDBC_URL
+          value: jdbc:mysql://mysql-sonar:3306/sonar?useSSL=false&characterEncoding=utf8
+        - name: SONAR_JDBC_USERNAME
+          value: sonar
+        - name: SONAR_JDBC_PASSWORD
+          value: sonarpass
+        - name: SONAR_ES_BOOTSTRAP_CHECKS_DISABLE
+          value: "true"   # utile sur Minikube pour éviter les erreurs Elasticsearch
+        ports:
+        - containerPort: 9000
+        volumeMounts:
+        - mountPath: /opt/sonarqube/data
+          name: sonarqube-data
+        - mountPath: /opt/sonarqube/extensions
+          name: sonarqube-extensions
+      volumes:
+      - name: sonarqube-data
+        persistentVolumeClaim:
+          claimName: sonarqube-data-pvc
+      - name: sonarqube-extensions
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sonarqube
+  namespace: devops
+spec:
+  selector:
+    app: sonarqube
+  ports:
+    - port: 9000
+      targetPort: 9000
+  type: NodePort   # ou LoadBalancer

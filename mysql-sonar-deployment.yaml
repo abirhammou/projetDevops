@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-sonar
+  namespace: devops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-sonar
+  template:
+    metadata:
+      labels:
+        app: mysql-sonar
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:5.7   # version stable, compatible avec SonarQube 7.8
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: rootpassword   # à changer
+        - name: MYSQL_DATABASE
+          value: sonar
+        - name: MYSQL_USER
+          value: sonar
+        - name: MYSQL_PASSWORD
+          value: sonarpass
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: mysql-storage
+      volumes:
+      - name: mysql-storage
+        persistentVolumeClaim:
+          claimName: mysql-sonar-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-sonar
+  namespace: devops
+spec:
+  selector:
+    app: mysql-sonar
+  ports:
+    - port: 3306
+  type: ClusterIP

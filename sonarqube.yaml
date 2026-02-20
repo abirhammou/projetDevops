@@ -25,18 +25,20 @@ spec:
       labels:
         app: sonarqube
     spec:
+      securityContext:                # <--- CRITICAL for permissions
+        fsGroup: 1000
       containers:
       - name: sonarqube
-        image: sonarqube:7.8-community   # version LTS avec support MySQL
+        image: sonarqube:9.9-community
         env:
         - name: SONAR_JDBC_URL
-          value: jdbc:mysql://mysql-sonar:3306/sonar?useSSL=false&characterEncoding=utf8
+          value: jdbc:postgresql://postgres-sonar:5432/sonar
         - name: SONAR_JDBC_USERNAME
           value: sonar
         - name: SONAR_JDBC_PASSWORD
           value: sonarpass
         - name: SONAR_ES_BOOTSTRAP_CHECKS_DISABLE
-          value: "true"   # utile sur Minikube pour éviter les erreurs Elasticsearch
+          value: "true"
         ports:
         - containerPort: 9000
         volumeMounts:
@@ -62,4 +64,4 @@ spec:
   ports:
     - port: 9000
       targetPort: 9000
-  type: NodePort   # ou LoadBalancer
+  type: NodePort

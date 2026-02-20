@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-sonar-pv
+  namespace: devops
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /data/postgres-sonar   # Adjust if using Minikube or cloud
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-sonar-pvc
+  namespace: devops
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-sonar
+  namespace: devops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-sonar
+  template:
+    metadata:
+      labels:
+        app: postgres-sonar
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:13
+        env:
+        - name: POSTGRES_DB
+          value: sonar
+        - name: POSTGRES_USER
+          value: sonar
+        - name: POSTGRES_PASSWORD
+          value: sonarpass   # Change in production!
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: postgres-storage
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-sonar-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-sonar
+  namespace: devops
+spec:
+  selector:
+    app: postgres-sonar
+  ports:
+    - port: 5432
+  type: ClusterIP
